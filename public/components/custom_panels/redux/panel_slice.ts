@@ -126,10 +126,11 @@ export const fetchPanel = (id) => async (dispatch, getState) => {
 
 export const fetchVisualization = () => (dispatch, getState) => {};
 
-const updateLegacyPanel = (panel: CustomPanelType) =>
+const updateLegacyPanel = (panel: CustomPanelType) => {
   coreRefs.http!.post(`${CUSTOM_PANELS_API_PREFIX}/panels/update`, {
     body: JSON.stringify({ panelId: panel.id, panel: panel as PanelType }),
   });
+};
 
 const updateSavedObjectPanel = (panel: CustomPanelType) => savedObjectPanelsClient.update(panel);
 

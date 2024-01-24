@@ -390,7 +390,6 @@ export const CustomPanelViewSO = (props: CustomPanelViewProps) => {
       Edit
     </EuiButton>
   );
-
   const addButton = (
     <EuiButton
       data-test-subj="addVisualizationButton"
