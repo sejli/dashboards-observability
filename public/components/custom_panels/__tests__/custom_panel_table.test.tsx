@@ -4,18 +4,17 @@
  */
 
 import { applyMiddleware, createStore } from '@reduxjs/toolkit';
-import { fireEvent, render, screen, waitFor, act, cleanup } from '@testing-library/react';
-import { configure, mount } from 'enzyme';
+import { fireEvent, render, waitFor, act, cleanup } from '@testing-library/react';
+import { configure } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import React from 'react';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
-import { CustomPanelListType } from '../../../../common/types/custom_panels';
 import { panelBreadCrumbs, panelsData } from '../../../../test/panels_constants';
 import { coreRefs } from '../../../framework/core_refs';
 import { rootReducer } from '../../../framework/redux/reducers';
 import { CustomPanelTable } from '../custom_panel_table';
-import { clonePanel, createPanel, deletePanels, setPanelList } from '../redux/panel_slice';
+import { setPanelList } from '../redux/panel_slice';
 
 jest.mock('react-router-dom', () => ({
   useLocation: jest.fn().mockReturnValue({
@@ -167,7 +166,6 @@ describe('Panels Table Component', () => {
     });
     await waitFor(() => {
       expect(coreRefs.http.delete).toHaveBeenCalledTimes(1);
-      // expect(coreRefs.savedObjectsClient.delete).toHaveBeenCalledTimes(1);
     });
   });
 

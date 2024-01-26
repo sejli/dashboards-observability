@@ -27,7 +27,7 @@ exports[`Panels View SO Component render panel view container and refresh panel 
             />
           </div>
           Created on 
-          01/24/2024 12:44 AM
+          01/26/2024 08:01 PM
         </div>
         <div
           class="euiPageHeaderSection"
@@ -458,7 +458,7 @@ exports[`Panels View SO Component render panel view so container and reload dash
             />
           </div>
           Created on 
-          01/24/2024 12:44 AM
+          01/26/2024 08:01 PM
         </div>
         <div
           class="euiPageHeaderSection"
@@ -600,7 +600,7 @@ exports[`Panels View SO Component render panel view so container and reload dash
             <div
               aria-expanded="false"
               aria-haspopup="listbox"
-              aria-labelledby="autocomplete-4-label"
+              aria-labelledby="autocomplete-5-label"
               class="aa-Autocomplete"
               id="autocomplete-root"
               role="combobox"
@@ -613,7 +613,7 @@ exports[`Panels View SO Component render panel view so container and reload dash
                 >
                   <input
                     aria-autocomplete="both"
-                    aria-labelledby="autocomplete-4-label"
+                    aria-labelledby="autocomplete-5-label"
                     autocapitalize="off"
                     autocomplete="off"
                     autocorrect="off"
@@ -891,7 +891,7 @@ exports[`Panels View SO Component renders panels view SO container with visualiz
             />
           </div>
           Created on 
-          01/24/2024 12:44 AM
+          01/26/2024 08:01 PM
         </div>
         <div
           class="euiPageHeaderSection"

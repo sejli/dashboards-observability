@@ -3,25 +3,26 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { configure, mount } from 'enzyme';
+import { configure } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import React from 'react';
 import { CustomPanelViewSO } from '../custom_panel_view_so';
 
-import { act, cleanup, fireEvent, render, waitFor, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 import {
   panelBreadCrumbs,
-  sampleEmptyPanel,
   samplePanel,
   samplePPLResponse,
   sampleSavedVisualization,
   sampleSavedObjectPanel,
   sampleSavedObjectPanelWithVisualization,
 } from '../../../../test/panels_constants';
+// eslint-disable-next-line jest/no-mocks-import
 import httpClientMock from '../../../../test/__mocks__/httpClientMock';
 import PPLService from '../../../../public/services/requests/ppl';
 import { HttpResponse } from '../../../../../../src/core/public';
 import DSLService from '../../../../public/services/requests/dsl';
+// eslint-disable-next-line jest/no-mocks-import
 import { coreStartMock } from '../../../../test/__mocks__/coreMocks';
 import { applyMiddleware, createStore } from 'redux';
 import { coreRefs } from '../../../framework/core_refs';
@@ -29,6 +30,17 @@ import { rootReducer } from '../../../framework/redux/reducers';
 import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
 import { setPanelList } from '../redux/panel_slice';
+
+jest.mock('react-router-dom', () => ({
+  useLocation: jest.fn().mockReturnValue({
+    pathname: '/operational_panels/L8Sx53wBDp0rvEg3yoLb',
+    search: '',
+    hash: '',
+    state: null,
+    key: '',
+  }),
+  useHistory: jest.fn(),
+}));
 
 describe('Panels View SO Component', () => {
   configure({ adapter: new Adapter() });
@@ -45,10 +57,19 @@ describe('Panels View SO Component', () => {
   http.post = jest.fn(() => Promise.resolve((samplePPLResponse as unknown) as HttpResponse));
   const pplService = new PPLService(http);
   const dslService = new DSLService(http);
-  coreRefs.savedObjectsClient.get = jest.fn().mockReturnValue(sampleSavedObjectPanel);
-  coreRefs.savedObjectsClient.find = jest.fn().mockReturnValue(sampleSavedObjectPanel);
+  coreRefs.savedObjectsClient.create = jest
+    .fn()
+    .mockReturnValue(sampleSavedObjectPanelWithVisualization);
+  coreRefs.savedObjectsClient.get = jest
+    .fn()
+    .mockReturnValue(sampleSavedObjectPanelWithVisualization);
+  coreRefs.savedObjectsClient.find = jest
+    .fn()
+    .mockReturnValue(sampleSavedObjectPanelWithVisualization);
   coreRefs.savedObjectsClient.update = jest.fn();
+  coreRefs.savedObjectsClient.delete = jest.fn();
   coreRefs.http.post = jest.fn();
+  coreRefs.http.delete = jest.fn();
 
   const props = {
     panelId: 'L8Sx53wBDp0rvEg3yoLb',
@@ -64,7 +85,7 @@ describe('Panels View SO Component', () => {
     dslService,
   };
 
-  const renderPanelView = (savedObject: any, overrides = {}) => {
+  const renderPanelView = (savedObject, overrides = {}) => {
     coreRefs.savedObjectsClient.get = jest.fn().mockReturnValue(savedObject);
     coreRefs.savedObjectsClient.find = jest.fn().mockReturnValue(savedObject);
     const utils = render(
@@ -81,7 +102,6 @@ describe('Panels View SO Component', () => {
 
   it('renders panel view SO container without visualizations', async () => {
     const utils = renderPanelView(sampleSavedObjectPanel);
-    // console.log(utils.debug());
 
     await waitFor(() => {
       expect(utils.container.firstChild).toMatchSnapshot();
@@ -91,7 +111,6 @@ describe('Panels View SO Component', () => {
   it('renders panels view SO container with visualizations', async () => {
     const utils = renderPanelView(sampleSavedObjectPanelWithVisualization);
 
-    // console.log(utils.debug());
     await waitFor(() => {
       expect(utils.container.firstChild).toMatchSnapshot();
     });
@@ -104,51 +123,46 @@ describe('Panels View SO Component', () => {
     fireEvent.click(utils.getByTestId('superDatePickerApplyTimeButton'));
   });
 
-  // it('render panel view container and test panelActionContextMenu', async () => {
-  //   const utils = renderPanelView(sampleSavedObjectPanelWithVisualization);
-  //   expect(utils.container.firstChild).toMatchSnapshot();
-
-  //   fireEvent.click(utils.getByTestId('panelActionContextMenu'));
-  //   fireEvent.click(utils.getByTestId('reloadPanelContextMenuItem'));
-  //   expect(utils.container.firstChild).toMatchSnapshot();
-
-  //   fireEvent.click(utils.getByTestId('panelActionContextMenu'));
-  //   fireEvent.click(utils.getByTestId('renamePanelContextMenuItem'));
-  //   expect(utils.container.firstChild).toMatchSnapshot();
-
-  //   fireEvent.click(utils.getByTestId('panelActionContextMenu'));
-  //   fireEvent.click(utils.getByTestId('duplicatePanelContextMenuItem'));
-  //   expect(utils.container.firstChild).toMatchSnapshot();
-
-  //   fireEvent.click(utils.getByTestId('panelActionContextMenu'));
-  //   fireEvent.click(utils.getByTestId('deletePanelContextMenuItem'));
-  //   expect(utils.container.firstChild).toMatchSnapshot();
-  // });
-
-  it('render panel view so container and rename dashboard', async () => {
+  it('render panel view so container and duplicate dashboard', async () => {
     store.dispatch(setPanelList([sampleSavedObjectPanelWithVisualization]));
     const utils = renderPanelView(sampleSavedObjectPanelWithVisualization);
 
     fireEvent.click(utils.getByTestId('panelActionContextMenu'));
-    fireEvent.click(utils.getByTestId('renamePanelContextMenuItem'));
+    fireEvent.click(utils.getByTestId('duplicatePanelContextMenuItem'));
     expect(utils.getByTestId('customModalFieldText')).toBeInTheDocument();
 
     fireEvent.input(utils.getByTestId('customModalFieldText'), {
-      target: { value: 'renamed panel' },
+      target: { value: 'duplicate panel' },
     });
-    // act(() => {
-      // });
-    console.log('modal button', screen.getByTestId('runModalButton'));
-    fireEvent.click(screen.getByTestId('runModalButton'));
-    screen.debug();
-      
+    act(() => {
+      fireEvent.click(utils.getByTestId('runModalButton'));
+    });
     await waitFor(() => {
-      expect(coreRefs.http.post).toBeCalledTimes(1);
+      expect(coreRefs.savedObjectsClient.create).toBeCalledTimes(1);
+    });
+  });
+
+  it('render panel view so container and delete dashboard', async () => {
+    store.dispatch(setPanelList([sampleSavedObjectPanelWithVisualization]));
+    const utils = renderPanelView(sampleSavedObjectPanelWithVisualization);
+
+    fireEvent.click(utils.getByTestId('panelActionContextMenu'));
+    fireEvent.click(utils.getByTestId('deletePanelContextMenuItem'));
+    expect(utils.getByTestId('popoverModal__deleteTextInput')).toBeInTheDocument();
+
+    fireEvent.input(utils.getByTestId('popoverModal__deleteTextInput'), {
+      target: { value: 'delete' },
+    });
+    act(() => {
+      fireEvent.click(utils.getByTestId('popoverModal__deleteButton'));
+    });
+    await waitFor(() => {
+      expect(coreRefs.http.delete).toBeCalledTimes(1);
     });
   });
 
   it('render panel view so container and reload dashboard', async () => {
-    // store.dispatch(setPanelList([sampleSavedObjectPanelWithVisualization]));
+    store.dispatch(setPanelList([sampleSavedObjectPanelWithVisualization]));
     const utils = renderPanelView(sampleSavedObjectPanelWithVisualization);
 
     fireEvent.click(utils.getByTestId('panelActionContextMenu'));

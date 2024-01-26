@@ -16,15 +16,19 @@ import {
   samplePPLResponse,
   sampleSavedVisualization,
 } from '../../../../test/panels_constants';
+// eslint-disable-next-line jest/no-mocks-import
 import httpClientMock from '../../../../test/__mocks__/httpClientMock';
 import PPLService from '../../../../public/services/requests/ppl';
 import DSLService from '../../../../public/services/requests/dsl';
+// eslint-disable-next-line jest/no-mocks-import
 import { coreStartMock } from '../../../../test/__mocks__/coreMocks';
 import { HttpResponse } from '../../../../../../src/core/public';
 import { applyMiddleware, createStore } from 'redux';
 import { rootReducer } from '../../../framework/redux/reducers';
 import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
+import { setPanelList } from '../redux/panel_slice';
+import { coreRefs } from '../../../../public/framework/core_refs';
 
 describe('Panels View Component', () => {
   configure({ adapter: new Adapter() });
@@ -60,6 +64,10 @@ describe('Panels View Component', () => {
     );
     return utils;
   };
+
+  afterEach(() => {
+    cleanup();
+  });
 
   it('renders panel view container without visualizations', async () => {
     httpClientMock.get = jest.fn(() =>
@@ -188,46 +196,37 @@ describe('Panels View Component', () => {
     const http = httpClientMock;
     const pplService = new PPLService(httpClientMock);
     const dslService = new DSLService(httpClientMock);
-
     const panelView = renderPanelView({ http, pplService, dslService });
-    expect(panelView.container.firstChild).toMatchSnapshot();
 
     fireEvent.click(panelView.getByTestId('superDatePickerApplyTimeButton'));
+    expect(panelView.container.firstChild).toMatchSnapshot();
   });
 
-  it('render panel view container and test panelActionContextMenu', async () => {
-    let counter = 0;
-    httpClientMock.get = jest.fn(() => {
-      if (counter === 0) {
-        counter += 1;
-        return Promise.resolve((samplePanel as unknown) as HttpResponse);
-      } else return Promise.resolve((sampleSavedVisualization as unknown) as HttpResponse);
+  it('render panel view container and duplicate dashboard', async () => {
+    store.dispatch(setPanelList([sampleSavedVisualization]));
+    const utils = renderPanelView(sampleSavedVisualization);
+
+    fireEvent.click(utils.getByTestId('panelActionContextMenu'));
+    fireEvent.click(utils.getByTestId('duplicatePanelContextMenuItem'));
+    expect(utils.getByTestId('customModalFieldText')).toBeInTheDocument();
+
+    fireEvent.input(utils.getByTestId('customModalFieldText'), {
+      target: { value: 'duplicate panel' },
     });
+    act(() => {
+      fireEvent.click(utils.getByTestId('runModalButton'));
+    });
+    await waitFor(() => {
+      expect(coreRefs.savedObjectsClient.create).toBeCalledTimes(1);
+    });
+  });
 
-    httpClientMock.post = jest.fn(() =>
-      Promise.resolve((samplePPLResponse as unknown) as HttpResponse)
-    );
-    const http = httpClientMock;
-    const pplService = new PPLService(httpClientMock);
-    const dslService = new DSLService(httpClientMock);
+  it('render panel view so container and reload dashboard', async () => {
+    store.dispatch(setPanelList([sampleSavedVisualization]));
+    const utils = renderPanelView(sampleSavedVisualization);
 
-    const panelView = renderPanelView({ http, pplService, dslService });
-    expect(panelView.container.firstChild).toMatchSnapshot();
-
-    fireEvent.click(panelView.getByTestId('panelActionContextMenu'));
-    fireEvent.click(panelView.getByTestId('reloadPanelContextMenuItem'));
-    expect(panelView.container.firstChild).toMatchSnapshot();
-
-    fireEvent.click(panelView.getByTestId('panelActionContextMenu'));
-    fireEvent.click(panelView.getByTestId('renamePanelContextMenuItem'));
-    expect(panelView.container.firstChild).toMatchSnapshot();
-
-    fireEvent.click(panelView.getByTestId('panelActionContextMenu'));
-    fireEvent.click(panelView.getByTestId('duplicatePanelContextMenuItem'));
-    expect(panelView.container.firstChild).toMatchSnapshot();
-
-    fireEvent.click(panelView.getByTestId('panelActionContextMenu'));
-    fireEvent.click(panelView.getByTestId('deletePanelContextMenuItem'));
-    expect(panelView.container.firstChild).toMatchSnapshot();
+    fireEvent.click(utils.getByTestId('panelActionContextMenu'));
+    fireEvent.click(utils.getByTestId('reloadPanelContextMenuItem'));
+    expect(utils.container.firstChild).toMatchSnapshot();
   });
 });

@@ -81,6 +81,23 @@ export const sampleSavedObjectPanelWithVisualization = {
   queryFilter: { query: "where host = 'www.opensearch.org'", language: 'ppl' },
 };
 
+export const savedPanelWithVisualization = {
+  id: 'L8Sx53wBDp0rvEg3yoLb',
+  type: 'observability-panel',
+  name: 'Dummy Saved Object Panel 2',
+  dateCreate: 1636053619774,
+  dateModified: 1636053619774,
+  visualizations: [
+    sampleSavedVisualization,
+    sampleSavedVisualizationForHorizontalBar,
+    sampleSavedVisualizationForLine,
+    sampleSavedVisualizationForTreeMap,
+    sampleSavedVisualizationForPie,
+  ],
+  timeRange: { to: 'now/y', from: 'now/y' },
+  queryFilter: { query: "where host = 'www.opensearch.org'", language: 'ppl' },
+};
+
 export const samplePPLResponse = {
   data: {
     'avg(FlightDelayMin)': [

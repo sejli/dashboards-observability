@@ -441,6 +441,7 @@ export const fetchAggregatedBinCount = async (
     });
     return response;
   } catch (error) {
+    console.log(JSON.parse(error));
     const errorMessage = JSON.parse(error.body.message);
     setIsError({
       errorMessage: errorMessage.error.reason || 'Issue in fetching bucket count',
